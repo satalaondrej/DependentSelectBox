@@ -29,7 +29,7 @@ use Nette\Utils\Json;
  * @author Jáchym Toušek
  * @author Dusan Hudak
  */
-class DependentSelectBox extends MultiSelectBox implements ISignalReceiver
+class DependentMultiSelectBox extends MultiSelectBox implements ISignalReceiver
 {
 
     /** @var string signal name */
