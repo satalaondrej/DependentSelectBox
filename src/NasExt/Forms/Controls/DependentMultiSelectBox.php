@@ -316,7 +316,7 @@ class DependentMultiSelectBox extends MultiSelectBox implements ISignalReceiver
     /********************* registration ****************** */
 
     /**
-     * Adds addDependentSelectBox() method to \Nette\Forms\Form
+     * Adds addDependentMultiSelectBox() method to \Nette\Forms\Form
      */
     public static function register()
     {
@@ -332,7 +332,7 @@ class DependentMultiSelectBox extends MultiSelectBox implements ISignalReceiver
      * @param callable $dependentCallback
      * @return DependentSelectBox provides fluent interface
      */
-    public static function addDependentSelectBox(Container $container, $name, $label = NULL, array $parents, callable $dependentCallback, $multiple = FALSE)
+    public static function addDependentMultiSelectBox(Container $container, $name, $label = NULL, array $parents, callable $dependentCallback, $multiple = FALSE)
     {
         $container[$name] = new self($label, $parents, $dependentCallback, $multiple);
         return $container[$name];
