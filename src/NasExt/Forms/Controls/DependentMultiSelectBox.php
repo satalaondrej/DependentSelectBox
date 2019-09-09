@@ -246,38 +246,35 @@ class DependentMultiSelectBox extends MultiSelectBox implements ISignalReceiver
      */
     public function signalReceived($signal)
     {
-        /** @var Presenter $presenter */
-        $presenter = $this->lookup('Nette\Application\UI\Presenter');
-        if ($signal === self::SIGNAL_NAME && $presenter->isAjax()) {
+        $presenter = $this->lookup('Nette\\Application\\UI\\Presenter');
 
-            if (!is_callable($this->dependentCallback)) {
-                throw new InvalidStateException('Dependent callback not set.');
-            }
-
-            $parentsValues = array();
+        if ($presenter->isAjax() && $signal === self::SIGNAL_NAME && !$this->isDisabled()) {
+            $parentsNames = [];
             foreach ($this->parents as $parent) {
-                $parentsValues[$parent->getName()] = $presenter->getParameter($parent->getName());
+                $value = $presenter->getParameter($this->getNormalizeName($parent));
+
+                if ($parent instanceof Nette\Forms\Controls\MultiChoiceControl) {
+                    $value = explode(',', $value);
+                    $value = array_filter($value, static function ($val) {return !in_array($val, [null, '', []], true);});
+                }
+
+                $parent->setValue($value);
+
+                $parentsNames[$parent->getName()] = $parent->getValue();
             }
 
-            /** @var DependentSelectBoxData $data */
-            $data = Callback::invokeArgs($this->dependentCallback, array($parentsValues));
-            if (!$data instanceof DependentSelectBoxData) {
-                throw new \Exception('Callback for:"' . $this->getHtmlId() . '" must return DependentSelectBoxData instance!');
-            }
-
-            $items = $data->getItems();
-            $value = $data->getValue();
-
-            $presenter->payload->dependentselectbox = array(
+            $data = $this->getDependentData([$parentsNames]);
+            $presenter->payload->dependentselectbox = [
                 'id' => $this->getHtmlId(),
-                'items' => $this->prepareItems($items),
-                'value' => $value,
-                'prompt' => $this->getPrompt(),
+                'items' => $data->getPreparedItems(!is_array($this->disabled) ?: $this->disabled),
+                'value' => $data->getValue(),
+                'prompt' => false,
                 'disabledWhenEmpty' => $this->disabledWhenEmpty,
-            );
+            ];
 
             $presenter->sendPayload();
         }
+    }
     }
 
 
