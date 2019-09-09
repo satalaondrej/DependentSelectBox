@@ -25,7 +25,8 @@ class DependentSelectBoxExtension extends Nette\DI\CompilerExtension
 
 		$init = $class->methods['initialize'];
 		$init->addBody('NasExt\Forms\Controls\DependentSelectBox::register();');
-	}
+        $init->addBody('NasExt\Forms\Controls\DependentMultiSelectBox::register();');
+    }
 
 
 
