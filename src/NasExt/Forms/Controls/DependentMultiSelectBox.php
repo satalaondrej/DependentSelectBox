@@ -275,7 +275,6 @@ class DependentMultiSelectBox extends MultiSelectBox implements ISignalReceiver
             $presenter->sendPayload();
         }
     }
-    }
 
 
     /**
