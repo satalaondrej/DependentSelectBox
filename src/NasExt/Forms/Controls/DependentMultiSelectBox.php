@@ -246,35 +246,40 @@ class DependentMultiSelectBox extends MultiSelectBox implements ISignalReceiver
      */
     public function signalReceived($signal)
     {
-        $presenter = $this->lookup('Nette\\Application\\UI\\Presenter');
+        /** @var Presenter $presenter */
+        $presenter = $this->lookup('Nette\Application\UI\Presenter');
+        if ($signal === self::SIGNAL_NAME && $presenter->isAjax()) {
 
-        if ($presenter->isAjax() && $signal === self::SIGNAL_NAME && !$this->isDisabled()) {
-            $parentsNames = [];
-            foreach ($this->parents as $parent) {
-                $value = $presenter->getParameter($this->getNormalizeName($parent));
-
-                if ($parent instanceof Nette\Forms\Controls\MultiChoiceControl) {
-                    $value = explode(',', $value);
-                    $value = array_filter($value, static function ($val) {return !in_array($val, [null, '', []], true);});
-                }
-
-                $parent->setValue($value);
-
-                $parentsNames[$parent->getName()] = $parent->getValue();
+            if (!is_callable($this->dependentCallback)) {
+                throw new InvalidStateException('Dependent callback not set.');
             }
 
-            $data = $this->getDependentData([$parentsNames]);
-            $presenter->payload->dependentselectbox = [
+            $parentsValues = array();
+            foreach ($this->parents as $parent) {
+                $parentsValues[$parent->getName()] = $presenter->getParameter($parent->getName());
+            }
+
+            /** @var DependentSelectBoxData $data */
+            $data = Callback::invokeArgs($this->dependentCallback, array($parentsValues));
+            if (!$data instanceof DependentSelectBoxData) {
+                throw new \Exception('Callback for:"' . $this->getHtmlId() . '" must return DependentSelectBoxData instance!');
+            }
+
+            $items = $data->getItems();
+            $value = $data->getValue();
+
+            $presenter->payload->dependentselectbox = array(
                 'id' => $this->getHtmlId(),
-                'items' => $data->getPreparedItems(!is_array($this->disabled) ?: $this->disabled),
-                'value' => $data->getValue(),
+                'items' => $this->prepareItems($items),
+                'value' => $value,
                 'prompt' => false,
                 'disabledWhenEmpty' => $this->disabledWhenEmpty,
-            ];
+            );
 
             $presenter->sendPayload();
         }
     }
+
 
 
     /**
