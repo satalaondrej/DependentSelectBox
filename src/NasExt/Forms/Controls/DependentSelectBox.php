@@ -271,7 +271,7 @@ class DependentSelectBox extends SelectBox implements ISignalReceiver
 			$presenter->payload->dependentselectbox = array(
 				'id' => $this->getHtmlId(),
 				'items' => $this->prepareItems($items),
-				'value' => $value,
+				'value' => is_array($value) ? $value : [$value],
 				'prompt' => $this->getPrompt(),
 				'disabledWhenEmpty' => $this->disabledWhenEmpty,
 			);
